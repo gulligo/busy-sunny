@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Busy Sunny</title>
+<meta name="apple-mobile-web-app-title" content="Busy Sunny">
+<meta name="application-name" content="Busy Sunny">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-512.png">
+<style>
+:root{--bg:#f5f0fb;--card:#fff;--p:#7c4dff;--t:#2b2b2b;--m:#888;--blue:#3b82f6;--red:#ef4444;--line:#e9e2f5}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--t);font-family:-apple-system,"Noto Sans KR","Malgun Gothic",sans-serif}
+body{padding:0 12px calc(24px + env(safe-area-inset-bottom,0px));max-width:520px;margin:0 auto}
+.tabs{position:sticky;top:0;z-index:5;display:flex;background:var(--bg);padding:calc(10px + env(safe-area-inset-top,0px)) 0 8px}
+.tabs button{flex:1;border:0;background:none;font-size:15px;font-weight:700;color:#444;padding:10px 0;border-bottom:3px solid transparent}
+.tabs button.on{color:var(--p);border-bottom-color:var(--p)}
+.hdr{text-align:center;font-size:21px;font-weight:800;color:var(--p);margin:4px 0 12px}
+.card{background:var(--card);border-radius:22px;padding:16px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.row b{font-size:18px}
+.m{color:var(--m);font-size:14px}
+input[type=time],input[type=number]{border:2px solid var(--line);background:#faf7ff;border-radius:12px;font-size:17px;font-weight:700;color:var(--t);padding:6px 8px;text-align:center}
+input[type=number]{width:70px}
+.big{font-size:30px;font-weight:800;color:var(--p);text-align:center;margin:10px 0 8px}
+.big.okc{color:var(--blue)}.big.badc{color:var(--red)}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;width:0;background:var(--red);border-radius:6px;transition:width .3s}
+.bar i.ok{background:var(--blue)}
+.btn{width:100%;border:0;border-radius:999px;padding:16px;font-size:20px;font-weight:800;color:#fff;background:linear-gradient(90deg,#6a5cff,#a07cff)}
+.btn.stop{background:#1fbf80}
+.btn.ghost{background:#efe9fb;color:#6a4bd6}
+.btn:disabled{background:#cfc6e4}
+.card.wk{background:#fff7e0;border-left:9px solid #f5a623}
+.card.wl{background:#eaf8ee;border-left:9px solid #2fb866}
+.card.ex{background:#f3ebff;border-left:9px solid #8e5cf0}
+.ttl{display:flex;align-items:center;gap:10px;font-size:22px;font-weight:800}
+.ttl i{font-style:normal;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:23px;background:#fff}
+.btn.wk{background:linear-gradient(90deg,#f5a623,#ffc857)}
+.btn.wl{background:linear-gradient(90deg,#2fb866,#66d98f)}
+.btn.ex{background:linear-gradient(90deg,#7c4dff,#a07cff)}
+.btn.stop{background:#3f3d56}
+.btn:disabled{background:#cfc6e4}
+.edit{margin-top:10px;text-align:center}
+.link{background:none;border:0;color:var(--m);font-size:14px;text-decoration:underline;padding:8px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;color:#fff;font-size:13px;font-weight:700}
+.badge.ok{background:var(--blue)}.badge.bad{background:var(--red)}
+.st{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;font-size:13px;color:var(--m);margin-top:14px}
+.st b{color:var(--p);font-size:15px}
+.msg{white-space:pre-line;font-size:14px;color:#6a4bd6;background:#f4eeff;border-radius:12px;padding:10px 12px;margin-top:12px;text-align:center;line-height:1.5}
+.pend .row.two{margin-top:12px}
+.pend .row.two .btn{flex:1;padding:14px;font-size:18px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.nav button{width:52px;height:52px;border:2px solid var(--line);background:#fff;border-radius:16px;font-size:22px;font-weight:700}
+.nav .c{text-align:center}
+.mo{font-size:22px;font-weight:800}
+.sub{font-size:13px;color:var(--m);margin-top:2px}
+.detail{min-height:44px;text-align:center;font-size:15px;padding:6px 0;line-height:1.6}
+.legend{display:flex;gap:14px;justify-content:center;font-size:13px;color:var(--m);margin-top:6px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;background:var(--c)}
+svg{width:100%;height:auto;display:block}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{text-align:center;font-size:13px;color:var(--m);padding:4px 0}
+.cell{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:12px}
+.cell.today{outline:2px solid var(--p)}
+.cell .ht{position:absolute;inset:2px;width:calc(100% - 4px);height:calc(100% - 4px)}
+.cell .dn{position:relative;z-index:1;font-weight:700;font-size:15px}
+.chipb{border:none;background:#f1ebf8;color:#8d4dff;font-weight:800;padding:12px 22px;border-radius:999px;font-size:15px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:900;padding:20px}
+.pop{background:#fff;border-radius:26px;padding:26px 22px 22px;max-width:340px;width:100%;text-align:center}
+.pe{font-size:56px}
+.pt{white-space:pre-line;max-height:55vh;overflow:auto;font-size:19px;font-weight:700;line-height:1.55;margin:12px 0 20px;word-break:keep-all}
+</style>
+</head>
+<body>
+<div class="tabs" id="tabs"></div>
+<div id="view"></div>
+<input type="file" id="restoreFile" accept=".json,application/json" style="display:none">
+
+<script>
+/* ================= 멘트 ================= */
+const WAKE_OK=[
+"축하합니다! 써니님, 일찍 일어나셨네요 🎉",
+"써니님의 하루를 응원해요!",
+"오늘 아침은 써니님이 이겼어요 🏆",
+"일찍 일어난 써니님, 오늘 뭐든 잘 풀릴 거예요",
+"아빠가 자랑스러워하실 거예요 👍",
+"이불 밖은 위험한데 해내셨네요!",
+"아침의 써니님, 반짝반짝 빛나요 ✨",
+"오늘도 해냈어요! 써니님은 정말 대단해요",
+"좋은 일이 써니님을 기다리고 있어요 🍀",
+"오늘의 주인공은 바로 써니님!",
+"일찍 일어나는 새가 벌레를 잡는대요. 오늘은 대박이에요 🐦",
+"써니님의 내일은 오늘보다 더 빛날 거예요",
+"작은 약속을 지킨 써니님, 큰 일도 해낼 거예요",
+"오늘 하루도 써니님 편이에요. 화이팅! 💪",
+"써니님의 아침이 오늘도 멋지게 열렸어요",
+"아침 공기가 써니님을 환영해요 🌿",
+"와! 벌써 일어나셨어요? 오늘은 뭐든 할 수 있겠어요",
+"써니님, 오늘도 잘 될 거예요. 제가 장담해요!",
+"오늘도 일찍 일어난 써니님, 어제보다 한 뼘 더 자랐어요 🌱",
+"써니님의 부지런함에 해님도 놀랐어요 🌞",
+"일어나기 힘들었죠? 그래도 해냈어요, 정말 멋져요!",
+"지금 이 뿌듯함, 하루 종일 간직해요 💛",
+"오늘도 일찍! 써니님은 약속을 지키는 사람이에요",
+"비지써니님, 일찍 일어나셨네요! 아침엔 비지국 한 그릇 어때요? 🍲",
+"일찍 일어난 써니님, 오늘은 비지(Busy)하게 알찬 하루가 될 거예요 ☀️",
+"비지써니님 비지국 먹고 힘내세요^^",
+"비지(Busy)한 하루도 써니님이라면 문제없어요!",
+"아침부터 비지써니 출동! 오늘도 반짝반짝 ✨",
+"뜨끈한 비지국 같은 하루가 되길 바라요, 써니님 🍲",
+"콩 심은 데 콩 나고, 일찍 일어난 데 행운 나요 🫘",
+"써니님이 일어나니 해님도 같이 떴어요 ☀️",
+"오늘의 날씨는 맑음, 써니님 덕분이에요 🌞",
+"비지써니님, 오늘도 비지하게 보내고 저녁엔 푹 쉬어요!",
+"비지국처럼 구수하고 든든한 하루 되세요, 써니님 🥣",
+"Busy Sunny 오늘도 영업 개시! 부지런한 써니님 최고예요 👍",
+"아빠가 \"우리 써니 일찍 일어났네!\" 하고 엄지를 척 올렸어요 👍",
+"아빠가 오늘 아침 커피가 유난히 맛있대요 ☕ 써니님 덕분이에요",
+"아빠가 비지국 끓이러 가셨어요 🍲 일찍 일어난 상이래요",
+"아빠가 \"역시 우리 써니!\" 하고 자랑하고 다니세요 😄",
+"엄마가 \"우리 써니 일찍 일어났네, 장하다!\" 하세요 👍",
+"엄마가 활짝 웃으셨어요 😊 오늘 하루 든든하겠어요",
+"찌공이가 \"오~ 일찍 일어났네?\" 하고 깜짝 놀랐어요 😲",
+"미키가 꼬리를 붕붕 흔들어요 🐶 반가워서요!",
+"미키와 깡이가 아침 인사하러 달려왔어요 🐾",
+"일찍 일어났더니 기분이 좋네. 용용이를 그리고 싶어지는군, 시작해 볼까? - 써니 생각!",
+"아침부터 상쾌하다! 용용이 한 장 그려서 아빠 깜짝 놀라게 해드려야지 😄 - 써니 생각!",
+"일찍 일어난 기념으로 아빠에게 용용이를 선물해야겠다 🎁 - 써니 생각!",
+"부지런한 아침엔 손도 잘 풀리겠지? 용용이 그려볼까 🎨 - 써니 생각!",
+"왠지 용용이가 잘 그려질 것 같은 날이다 ✏️ - 써니 생각!"
+];
+const WAKE_FAIL=[
+"꽝! 아깝네요. 내일 다시 도전해 봐요.",
+"\"이런 게으름뱅이야!\" 라고 아빠가 전해주래요.",
+"너 또 밤새 게임했어? 그러면 안 돼ㅠㅠ;;",
+"아빠 생각에 밤잠을 설쳤구나.",
+"이불이 써니님을 놓아주지 않았군요.",
+"알람은 죄가 없어요. 내일 다시 해봐요.",
+"늦었지만 일어난 게 어디예요. 내일은 더 일찍!",
+"오늘은 늦잠 하루 쿠폰 사용 완료. 내일은 없어요 😤",
+"비지써니님, 늦잠 잤어요? 비지국 먹고 정신 차려요 🍲",
+"오늘 써니님 날씨는 흐림 ☁️ 내일은 쨍하게 맑음으로!",
+"아침 해는 떴는데 써니님은 아직... 내일은 같이 떠요! 🌅",
+"비지는 먹어도 늦잠은 안 먹힌다구요 ㅎㅎ 내일 다시!",
+"아빠가 비지국 끓여놓고 기다렸는데... 😤 내일은 일찍!",
+"비지(Busy)한 하루가 늦게 시작됐네요. 서두르면 따라잡아요!",
+"꽝! 아쉽지만 내일은 써니님이 이겨요 ✊",
+"\"이런 게으름뱅이야!\" 하고 아빠가 한 번 더 전해주래요.",
+"이불이 오늘도 이겼네요. 내일은 써니님 차례예요 🛏️",
+"어젯밤 게임 몇 판 하셨어요? 판수는 비밀로 해드릴게요 🎮",
+"알람 끄고 다시 잔 거, 다 알아요 😏",
+"아침 해가 기다리다 지쳐서 올라갔어요 ☀️ 내일은 먼저 나와요!",
+"비지써니님, 오늘은 비지(Busy)하게 서둘러야겠어요. 파이팅!",
+"늦게 일어난 만큼 오늘은 더 알차게! 만회할 수 있어요 💪",
+"푹 잤으니 체력은 만땅이겠네요. 이제 달려봐요 🏃",
+"내일 일찍 일어나면 오늘 일은 없던 걸로 해드려요 😉",
+"아빠가 \"일찍 일어나는 새가 벌레를 잡는다\"고 전해주래요. 오늘은 벌레가 도망갔어요 🐛",
+"써니님, 오늘 아침은 구름 가득 ☁️ 그래도 낮엔 갤 거예요!",
+"지각은 한 번이면 충분해요. 내일은 정시 출근! ⏰",
+"비지국 먹고 힘내서 오늘은 만회해요 🍲",
+"새벽 게임은 달콤하지만 아침은 가혹하죠 ㅠㅠ 오늘은 일찍 주무세요 🌙",
+"괜찮아요, 누구나 이불이 이기는 날이 있어요. 내일 복수전! ⚔️",
+"오늘은 빨간불 🔴 내일은 파란불로 바꿔봐요!",
+"밤새운 눈이 반쯤 감겼네요 😪 세수하고 시작해요!",
+"아빠 표정이 굳었어요... 내일은 웃게 해드려요 😅",
+"기록은 다시 쌓으면 돼요. 내일부터 새로 시작해요 🔥",
+"아빠가 \"해 뜬 지가 언제인데...\" 하고 혀를 끌끌 차셨어요 😮‍💨",
+"아빠가 \"게임은 그만하고 자라고 했잖아!\" 하셨어요 🎮",
+"엄마가 \"해가 중천이다, 일어나!\" 하고 전해주래요 🌞",
+"엄마가 아침밥 차려놨는데 다 식겠다고 하셨어요 🍚",
+"엄마가 \"밤새 뭐 했니? 일찍 자야지~\" 하셨어요",
+"찌공이가 \"써니님 또 늦잠이래~\" 하고 놀리고 갔어요 😝",
+"찌공이는 벌써 일어났다고 자랑하고 갔어요 😎",
+"미키가 얼굴 핥으러 왔다가 포기했어요 🐶 내일은 일어나요!",
+"깡이가 \"멍! 멍! 멍!\" 세 번 짖었는데도 못 일어나셨어요 🐕",
+"미키와 깡이가 밥 달라고 기다리고 있어요 🐾 어서 일어나요!",
+"깡이가 문 앞에서 한참 기다리다 갔어요... 내일은 일찍 만나요",
+"늦게 일어났으니 벌 대신 아빠에게 용용이를 그려드려야겠다. - 써니 생각!",
+"늦잠 잤으니 오늘은 용용이를 그려서 아빠한테 용서를 빌어야겠다 🙏 - 써니 생각!",
+"아빠한테 혼나기 전에 용용이부터 그려서 보여드려야지. 효과 있겠지? - 써니 생각!",
+"이불이 이겼다... 내일은 일찍 일어나서 아빠가 좋아하는 용용이를 그려야겠다. - 써니 생각!",
+"늦잠 잔 건 인정! 아빠를 생각하며 용용이를 정성껏 그려봐야겠다 ✏️ - 써니 생각!",
+"늦잠 벌칙으로 용용이 두 장! 아빠가 제일 좋아하시겠지 😅 - 써니 생각!"
+];
+const WALK_OK=[
+"목표 달성! 오늘도 한 걸음 더 🚶",
+"써니님, 오늘 발걸음이 가벼웠네요",
+"걸을수록 하루가 맑아져요. 수고하셨어요 🌤️",
+"오늘의 산책 미션 성공! 내일은 어떤 길을 걸을까요?",
+"한 걸음 한 걸음이 써니님을 건강하게 만들어요",
+"바람도 햇살도 써니님을 응원했어요 🍃",
+"오늘 걸은 만큼 마음도 가벼워졌길 바라요",
+"꾸준한 걸음이 큰 변화를 만들어요. 화이팅!",
+"멋져요! 오늘도 써니님이 써니님을 이겼어요",
+"발걸음마다 행운이 따라와요 🍀",
+"목표 완료! 지금 이 기분 그대로 하루를 즐겨요",
+"걷기를 해낸 써니님, 못 할 일이 없어요",
+"오늘의 산책이 내일의 힘이 될 거예요",
+"아빠도 흐뭇해하실 거예요. 최고예요! 👏",
+"한 걸음씩 걷다 보니 어느덧 목표까지, 대단해요!",
+"산책 성공! 오늘 하루가 한결 가벼워질 거예요 🌿",
+"걷는 동안 쌓인 생각도 훌훌 털어냈길 바라요",
+"써니님의 다리가 오늘도 열일했어요 🦵",
+"하늘도 써니님의 산책을 응원했어요 ☁️",
+"목표를 채운 오늘, 내일은 더 멀리 가볼까요?",
+"걷기는 배신하지 않아요. 오늘도 성공!",
+"오늘의 산책길이 내일의 좋은 기억이 될 거예요",
+"꾸준히 걷는 써니님, 정말 멋진 습관이에요 👏",
+"이만큼 걸었으면 오늘은 이미 부자예요. 건강 부자!",
+"산책 완료! 써니님의 하루에 활기가 가득 차올랐어요",
+"오늘도 해냈어요. 이 기세로 쭉쭉 가봐요!",
+"걷는 써니님 뒷모습이 오늘따라 더 당당해요",
+"작은 걸음이 모여 큰 변화가 돼요. 오늘도 한 걸음 성장!",
+"오늘의 걸음 수만큼 행운이 쌓였어요 🍀",
+"산책 목표 달성! 오늘은 푹 쉬어도 돼요 ☺️",
+"비지써니님, 걷고 나면 비지국이 꿀맛이에요 🍲",
+"써니님이 걸으니 길도 반짝 Sunny Day 🌞",
+"오늘 걸은 만큼 마음도 맑음! 써니님 최고 ☀️",
+"비지(Busy)한 와중에도 산책 성공, 진짜 멋져요!",
+"콩이 비지가 되듯, 걸음이 쌓여 건강이 돼요 🫘",
+"비지써니 산책 완료! 오늘도 한 걸음 더 👟",
+"걷고 난 뒤 먹는 비지국이 보약이에요 🥣",
+"써니님이 걷는 길은 늘 햇살길이에요 🌤️",
+"비지하게 걸었으니 오늘 저녁은 든든하게 드세요 😋",
+"아빠가 \"산책 갔다 왔어? 장하다!\" 하세요 👟",
+"아빠도 같이 걸은 기분이래요 🚶",
+"미키가 \"산책 최고!\" 하고 꼬리를 흔들어요 🐶",
+"깡이도 같이 걸은 기분이라며 신났어요 🐕",
+"엄마가 \"걷기가 보약이다\" 하셨어요 💚",
+"찌공이가 \"오~ 오늘은 좀 하네?\" 하고 인정했어요 👍",
+"산책하고 나니 머리가 맑다. 용용이를 그려볼까? - 써니 생각!",
+"걷다가 본 풍경을 용용이랑 같이 그려보고 싶어졌다 🌳 - 써니 생각!",
+"산책 목표 달성! 이 기분으로 용용이 한 장 그리면 잘 나오겠다 🎨 - 써니 생각!",
+"걸으면서 떠오른 용용이 아이디어, 잊기 전에 그려야겠다! - 써니 생각!"
+];
+const EX_OK=[
+"목표 달성! 땀 흘린 보람이 있네요 💪",
+"아빠가 엄지 척 해주셨어요 👍",
+"어제보다 더 강해진 써니님, 멋져요!",
+"흘린 땀은 거짓말을 하지 않아요 💦",
+"해냈어요! 오늘의 써니님은 근육 부자예요",
+"힘들었지만 끝까지 했어요. 정말 대단해요",
+"오늘의 노력이 내일의 몸을 만들어요",
+"포기하지 않은 써니님에게 박수를! 👏",
+"운동 끝! 이제 맛있는 거 드셔도 돼요 😋",
+"꾸준함이 최고의 운동이에요. 오늘도 성공!",
+"써니님의 몸이 오늘도 고마워하고 있어요",
+"목표를 채운 써니님, 오늘 하루 정말 빛나요 ✨",
+"내일의 써니님도 오늘처럼 해낼 거예요. 파이팅!",
+"운동 성공! 오늘의 써니님은 어제보다 강해요",
+"힘든 순간을 이겨낸 써니님, 진짜 멋져요 🔥",
+"근육이 써니님에게 박수를 보내고 있어요 👏",
+"한 세트 한 세트가 써니님을 단단하게 만들어요",
+"해냈다! 이 뿌듯함은 운동한 사람만 알아요",
+"오늘도 약속 지킨 써니님, 내일이 기대돼요",
+"땀 한 방울마다 건강이 쌓였어요 💧",
+"운동 완료! 지금 샤워하면 기분이 최고일 거예요",
+"포기하고 싶을 때 한 번 더, 써니님은 해냈어요",
+"오늘의 운동이 써니님의 체력을 한 단계 올렸어요 ⬆️",
+"꾸준함의 힘을 보여줬어요. 정말 대단해요!",
+"몸도 마음도 튼튼해지는 중이에요. 화이팅!",
+"오늘도 운동 성공! 아빠가 몰래 자랑하고 다닐 거예요",
+"써니님의 노력은 반드시 결과로 돌아와요 🌟",
+"힘껏 해낸 오늘, 푹 쉬고 내일도 파이팅!",
+"운동 미션 클리어! 오늘의 영웅은 써니님 🦸",
+"비지써니님, 운동 끝! 비지국 먹고 힘내세요^^ 🍲",
+"단백질 풍부한 비지국이 오늘 운동 보상이에요 💪",
+"써니님 근육에 쨍하고 해 떴어요 ☀️",
+"비지(Busy)하게 땀 흘린 써니님, 오늘의 MVP!",
+"비지써니 운동 성공! 오늘도 한 뼘 더 강해졌어요 🔥",
+"땀 흘린 만큼 맑음이에요, 써니님 🌞",
+"비지국에 밥 말아 먹어도 되는 날이에요 😋",
+"써니님이 운동하면 헬스장도 Sunny Day!",
+"비지처럼 몽글하던 몸이 점점 탄탄해져요 💪",
+"바빠도 운동은 챙기는 써니님, 건강하게 사는 사람이에요!",
+"아빠가 \"근육 좀 보자!\" 하고 기대하고 계세요 💪",
+"아빠가 엄지 두 개를 척! 올리셨어요 👍👍",
+"엄마가 \"우리 써니 건강하겠네\" 하고 흐뭇해하세요 😊",
+"찌공이가 근육 만져보고 깜짝 놀랐어요 💪",
+"미키와 깡이가 박수 대신 꼬리를 흔들었어요 🐾",
+"아빠, 엄마, 찌공이, 미키, 깡이 모두 응원 중이에요! 📣",
+"목표를 달성하고 나니 왠지 용용이를 그리고 싶어지는군. 시작해 볼까? - 써니 생각!",
+"운동으로 땀 흘렸으니 이제 힘 빼고 용용이를 그려봐야지 ✏️ - 써니 생각!",
+"근육 빵빵한 용용이를 그려볼까? 오늘은 왠지 잘 그려질 것 같다 💪 - 써니 생각!",
+"운동 끝! 보상은 용용이 그리기로 정했다 🎨 - 써니 생각!"
+];
+const POOL={wake:WAKE_OK,walk:WALK_OK,ex:EX_OK};
+const SPECIAL={
+ 3:L=>`${L} 3일 연속 성공! 작심삼일을 넘겼어요 🎉`,
+ 7:L=>`${L} 일주일 연속 성공! 이제 습관이 되어 가고 있어요 🔥`,
+ 10:L=>`${L} 10일 연속 성공! 두 자릿수 돌파, 써니님 대단해요 💯`,
+ 14:L=>`${L} 2주 연속 성공! 이 정도면 진짜 실력이에요 💪`,
+ 21:L=>`${L} 21일 연속 성공! 습관이 완성되어 가고 있어요 ✨`,
+ 30:L=>`${L} 30일 연속 성공!! 써니님은 이미 전설이에요 🏆`
+};
+
+/* ================= 데이터 ================= */
+const KEY='scazle-v1';
+const DEF={wake:{},walk:{},ex:{},run:{walk:null,ex:null},wakeGoal:'06:30',goal:{walk:30,ex:30}};
+let S;
+try{S=Object.assign({},DEF,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){S=Object.assign({},DEF)}
+S.msg=S.msg||{wake:{},walk:{},ex:{}};
+S.cel=S.cel||{walk:{},ex:{}};
+S.bag=S.bag||{};
+S.pending=S.pending||{walk:null,ex:null};
+S.bonusSeen=S.bonusSeen||false;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const pad=n=>String(n).padStart(2,'0');
+const keyOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const toMin=s=>{const a=s.split(':').map(Number);return a[0]*60+a[1]};
+const fmt=m=>pad(Math.floor(m/60))+':'+pad(m%60);
+const LABEL={wake:'기상',walk:'산책',ex:'운동'};
+const TH={walk:'wl',ex:'ex'};
+const ICON={wake:'☀️',walk:'🚶',ex:'💪'};
+let tab='main';
+let cur=new Date();cur.setDate(1);
+
+const BONUS={
+wake:[
+"☀️ 일찍 일어나다가 바닥에서 30,000포인트를 주웠어요! 부지런한 사람에게만 보이는 행운 🍀",
+"🍀 숨은 행운 당첨! 일찍 일어나는 사람에게만 보이는 보너스 30,000포인트가 터졌어요",
+"🎊 깜짝 선물! 아침 해님이 30,000포인트를 물고 왔어요, 써니님!",
+"🎁 비지써니님, 부지런한 아침의 보너스! 30,000포인트를 획득하셨습니다",
+"✨ 이럴 수가! 기상 미션 속에 숨어 있던 행운 발견! 30,000포인트 획득 🎉"
+],
+walk:[
+"👟 걷다가 길에서 30,000포인트를 주웠어요! 열심히 걷는 사람에게만 보이는 행운 🍀",
+"🍀 오늘 산책길에 행운이 따라왔어요. 보너스 30,000포인트!",
+"🎁 깜짝 선물 도착! 걷는 써니님께 30,000포인트가 당첨되었습니다",
+"🌳 산책길 나무 밑에서 보물 발견! 30,000포인트를 획득하셨습니다 ✨",
+"🎊 축하합니다 써니님! 미키와 깡이가 물어다 준 행운, 30,000포인트 🐶"
+],
+ex:[
+"💪 운동하다가 바닥에서 30,000포인트를 주웠어요! 땀 흘린 사람에게만 보이는 행운 🍀",
+"🍀 땀방울 속에 숨어 있던 행운 발견! 보너스 30,000포인트가 터졌어요",
+"🎁 깜짝 선물! 근육이 보내온 30,000포인트, 써니님께 도착했습니다",
+"🏅 축하합니다 써니님! 오늘의 MVP 보너스 30,000포인트를 획득하셨습니다",
+"🎊 비지써니님, 운동 끝에 뜻밖의 행운! 30,000포인트 당첨 🎉"
+]
+};
+S.cyc=S.cyc||{};
+function nextMsg(kind){
+  const arr=POOL[kind];let c=S.cyc[kind];
+  if(!c||!c.length||c.some(t=>t!=='B'&&t>=arr.length)){
+    c=arr.map((_,i)=>i);c.push('B');
+    for(let i=c.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[c[i],c[j]]=[c[j],c[i]]}
+  }
+  const t=c.pop();S.cyc[kind]=c;
+  return t;
+}
+
+function addDays(k,n){const a=k.split('-').map(Number);return keyOf(new Date(a[0],a[1]-1,a[2]+n,12))}
+function pick(name,arr){
+  let b=S.bag[name];
+  if(!b||!b.length||b.some(i=>i>=arr.length)){
+    b=arr.map((_,i)=>i);
+    for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}
+  }
+  const i=b.pop();S.bag[name]=b;return arr[i];
+}
+
+/* 성공 판정 */
+function okOn(kind,k,noLive){
+  const r=S[kind][k];
+  if(kind==='wake')return !!r&&r.t<=r.goal;
+  let sec=r?r.sec:0;const g=r?r.goal:S.goal[kind];
+  const run=S.run[kind];if(!noLive&&run&&run.day===k)sec+=(Date.now()-run.start)/1000;
+  return g>0&&sec>=g*60;
+}
+function streakInfo(kind){
+  const today=keyOf(new Date());
+  let c=0,k=okOn(kind,today)?today:addDays(today,-1);
+  while(okOn(kind,k)){c++;k=addDays(k,-1)}
+  const list=Object.keys(S[kind]).filter(x=>okOn(kind,x)).sort();
+  let best=0,run=0,prev=null;
+  for(const x of list){run=(prev&&addDays(prev,1)===x)?run+1:1;best=Math.max(best,run);prev=x}
+  return {cur:c,best:Math.max(best,c)};
+}
+function monthOk(kind){
+  const t=new Date();let c=0;
+  for(let d=1;d<=t.getDate();d++)if(okOn(kind,t.getFullYear()+'-'+pad(t.getMonth()+1)+'-'+pad(d)))c++;
+  return c;
+}
+
+/* ================= 폭죽 / 팝업 ================= */
+function confetti(n){
+  let c=document.getElementById('cf');
+  if(!c){c=document.createElement('canvas');c.id='cf';c.style.cssText='position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:1000';document.body.appendChild(c)}
+  const dpr=window.devicePixelRatio||1,W=innerWidth,H=innerHeight;
+  c.width=W*dpr;c.height=H*dpr;
+  const x=c.getContext('2d');
+  const cols=['#ff6b9d','#ffd93d','#6bcb77','#4d96ff','#9b5de5','#ff9f45'];
+  const P=[];
+  for(let i=0;i<n;i++)P.push({x:W/2+(Math.random()-.5)*60,y:H*.45,vx:(Math.random()-.5)*15,vy:-Math.random()*15-4,s:5+Math.random()*6,r:Math.random()*6,vr:(Math.random()-.5)*.4,c:cols[i%cols.length]});
+  let f=0;
+  (function loop(){
+    x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);
+    P.forEach(p=>{p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;
+      x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/3,p.s,p.s*.6);x.restore()});
+    f++;
+    if(f<200)requestAnimationFrame(loop);else x.clearRect(0,0,W,H);
+  })();
+}
+function popup(text,ok,big,bonus,after,letter){
+  const o=document.createElement('div');o.className='ov';
+  const p=document.createElement('div');p.className='pop';
+  const e=document.createElement('div');e.className='pe';e.textContent=ok?(letter?'💌':bonus?'🎁':big?'🏆':'🎉'):'😴';
+  const t=document.createElement('div');t.className='pt';t.textContent=text;
+  const b=document.createElement('button');b.className='btn';b.textContent='확인';b.onclick=()=>{o.remove();if(after)popup(after,true,false,false,null,true)};
+  p.append(e,t,b);o.appendChild(p);document.body.appendChild(o);
+  if(ok){confetti(big?230:130);if(big)setTimeout(()=>confetti(170),600);if(bonus)setTimeout(()=>confetti(200),1200)}
+}
+const BIG9=["🎆 대박! 지금까지 총 9번째 성공, 숨겨둔 특별 보너스 100,000포인트가 터졌어요!!", "👑 축하합니다 써니님! 총 9번째 성공 달성, 특별 보너스 100,000포인트를 획득하셨습니다!", "💎 9번째 성공의 주인공은 써니님! 100,000포인트 대박 당첨 🎉"];
+const LETTER9="선아야 니가 열심히 해줘서 정말 고맙다.\n힘들었을텐데도 하루하루 도전하고 성공하는\n모습을 상상하며 벌써부터 기뻐하고 있다.^^\n언제까지 이 비지 써니를 할지는 모르겠지만\n이 인생에 큰 도움이 되길 빌어본다.\n여기까지 온것 만으로도 너를 칭찬하고 싶구나\n앞으로도 규칙적인 생활을 해서 건강한 삶을\n살아보자. 홧팅!";
+function okCounts(){
+  let w=0;
+  for(const k in S.wake){const r=S.wake[k];if(r&&r.t<=r.goal)w++}
+  return {wake:w,walk:Object.keys(S.cel.walk||{}).length,ex:Object.keys(S.cel.ex||{}).length};
+}
+function celebrateText(kind){
+  const st=streakInfo(kind).cur;
+  const t=nextMsg(kind);
+  const cap=()=>{if(!S.bonusSeen){S.bonusSeen=true;return ' (캡쳐해서 아빠에게)'}return ''};
+  const n=okCounts(),bs=S.big9Base||{wake:0,walk:0,ex:0};
+  if(n.wake-bs.wake>=3&&n.walk-bs.walk>=3&&n.ex-bs.ex>=3){
+    S.big9Base=n;
+    return {text:pick('big9',BIG9),big:true,bonus:true,after:LETTER9};
+  }
+  if(t==='B'){
+    return {text:pick(kind+'Bonus',BONUS[kind])+cap(),big:true,bonus:true};
+  }
+  if(SPECIAL[st])return {text:SPECIAL[st](LABEL[kind]),big:true};
+  return {text:POOL[kind][t],big:false};
+}
+
+/* ================= 탭 ================= */
+function drawTabs(){
+  const names=[['main','메인'],['wake','기상'],['walk','산책'],['ex','운동'],['cal','달력'],['set','설정']];
+  document.getElementById('tabs').innerHTML=names.map(n=>`<button class="${tab===n[0]?'on':''}" onclick="setTab('${n[0]}')">${n[1]}</button>`).join('');
+}
+function setTab(t){tab=t;drawTabs();render();window.scrollTo(0,0)}
+function render(){tab==='main'?renderMain():tab==='cal'?renderCal():tab==='set'?renderSet():renderGraph(tab)}
+
+/* ================= 기상 ================= */
+function wakePress(){
+  const n=new Date(),k=keyOf(n);if(S.wake[k])return;
+  S.wake[k]={t:n.getHours()*60+n.getMinutes(),goal:toMin(S.wakeGoal)};
+  const ok=S.wake[k].t<=S.wake[k].goal;
+  let text,big=false,bonus=false,after=null;
+  if(ok){const c=celebrateText('wake');text=c.text;big=c.big;bonus=!!c.bonus;after=c.after||null}
+  else text=pick('wakeFail',WAKE_FAIL);
+  S.msg.wake[k]=text;save();renderMain();popup(text,ok,big,bonus,after);
+}
+function setWakeGoal(v){
+  if(!v)return;S.wakeGoal=v;
+  const r=S.wake[keyOf(new Date())];if(r)r.goal=toMin(v);
+  save();renderMain();
+}
+
+/* ================= 산책 / 운동 ================= */
+function toggle(kind){
+  const r=S.run[kind];
+  if(r){
+    const sec=Math.max(0,(Date.now()-r.start)/1000);
+    S.run[kind]=null;S.pending[kind]={day:r.day,sec:sec};
+  }else{
+    S.run[kind]={start:Date.now(),day:keyOf(new Date())};
+  }
+  save();renderMain();
+}
+function pendSave(kind){
+  const pd=S.pending[kind];if(!pd)return;
+  const v=Math.max(0,parseFloat(document.getElementById('pm-'+kind).value)||0);
+  const rec=S[kind][pd.day]||(S[kind][pd.day]={sec:0,goal:S.goal[kind]});
+  rec.sec+=v*60;S.pending[kind]=null;save();renderMain();checkGoal(kind);
+}
+function pendDrop(kind){S.pending[kind]=null;save();renderMain()}
+let editKind=null;
+function openEdit(kind){editKind=kind;renderMain()}
+function closeEdit(){editKind=null;renderMain()}
+function saveEdit(kind){
+  const v=Math.max(0,parseFloat(document.getElementById('em-'+kind).value)||0);
+  const k=keyOf(new Date());
+  const rec=S[kind][k]||(S[kind][k]={sec:0,goal:S.goal[kind]});
+  rec.sec=v*60;editKind=null;save();renderMain();checkGoal(kind);
+}
+function setGoal(kind,v){
+  v=Math.max(0,parseInt(v)||0);S.goal[kind]=v;
+  const rec=S[kind][keyOf(new Date())];if(rec)rec.goal=v;
+  save();renderMain();
+}
+function checkGoal(kind){
+  const k=keyOf(new Date());
+  if(S.cel[kind][k]||!okOn(kind,k,true))return;
+  S.cel[kind][k]=true;
+  const c=celebrateText(kind);
+  S.msg[kind][k]=c.text;save();renderMain();popup(c.text,true,c.big,c.bonus,c.after);
+}
+
+/* ================= 메인 ================= */
+function statLine(kind){
+  const s=streakInfo(kind);
+  return `<div class="st"><span>🔥 현재 연속 <b>${s.cur}</b>일</span><span>🏆 최고 연속 <b>${s.best}</b>일</span><span>이번 달 성공 <b>${monthOk(kind)}</b>일</span></div>`;
+}
+function msgLine(kind){const m=S.msg[kind][keyOf(new Date())];return m?`<div class="msg">${m}</div>`:''}
+function kindCard(kind){
+  const run=S.run[kind],l=LABEL[kind],pd=S.pending[kind];
+  let action;
+  if(pd){
+    const mins=Math.round(pd.sec/60);
+    action=`<div class="pend"><div class="m" style="text-align:center;margin-bottom:10px">이번 ${l} 시간을 확인해 주세요<br>(시작 후 ${mins}분 지났어요)</div>
+      <div class="row" style="justify-content:center"><input type="number" id="pm-${kind}" min="0" inputmode="decimal" value="${mins}"><span>분</span></div>
+      <div class="row two"><button class="btn ghost" onclick="pendDrop('${kind}')">기록 안 함</button><button class="btn" onclick="pendSave('${kind}')">저장</button></div></div>`;
+  }else{
+    action=`<button class="btn ${run?'stop':TH[kind]}" onclick="toggle('${kind}')">${run?'⏸ '+l+' 종료':'▶ '+l+' 시작'}</button>`;
+  }
+  let edit='';
+  if(!pd&&!run){
+    if(editKind===kind){
+      const cm=Math.round((S[kind][keyOf(new Date())]?S[kind][keyOf(new Date())].sec:0)/60);
+      edit=`<div class="pend"><div class="m" style="text-align:center;margin:12px 0 8px">오늘 ${l} 총 시간 고치기</div>
+        <div class="row" style="justify-content:center"><input type="number" id="em-${kind}" min="0" inputmode="decimal" value="${cm}"><span>분</span></div>
+        <div class="row two"><button class="btn ghost" onclick="closeEdit()">취소</button><button class="btn ${TH[kind]}" onclick="saveEdit('${kind}')">저장</button></div></div>`;
+    }else edit=`<div class="edit"><button class="link" onclick="openEdit('${kind}')">✏️ 오늘 시간 고치기</button></div>`;
+  }
+  return `<div class="card ${TH[kind]}">
+    <div class="row"><div class="ttl"><i>${ICON[kind]}</i>${l}</div>
+      <span class="m">오늘 목표 <input type="number" min="0" inputmode="numeric" value="${S.goal[kind]}" onchange="setGoal('${kind}',this.value)"> 분</span></div>
+    <div style="margin-top:12px">${action}</div>
+    <div class="big badc" id="t-${kind}">0분 00초</div>
+    <div class="bar"><i id="b-${kind}"></i></div>
+    ${edit}${statLine(kind)}${msgLine(kind)}
+  </div>`;
+}
+function renderMain(){
+  const k=keyOf(new Date()),w=S.wake[k];
+  let wakeBody;
+  if(w){
+    const ok=w.t<=w.goal;
+    wakeBody=`<div class="big ${ok?'okc':'badc'}">${fmt(w.t)}</div>
+      <div style="text-align:center;margin-bottom:12px"><span class="badge ${ok?'ok':'bad'}">${ok?'일찍 일어남':'늦게 일어남'}</span></div>
+      <button class="btn" disabled>기상 완료</button>`;
+  }else{
+    wakeBody=`<div class="big" style="color:#bbb">--:--</div>
+      <button class="btn wk" onclick="wakePress()">☀️ 지금 일어났어요</button>`;
+  }
+  document.getElementById('view').innerHTML=
+    `<div class="hdr">☀️ Busy Sunny</div><div class="card wk"><div class="row"><div class="ttl"><i>☀️</i>기상</div>
+      <span class="m">목표 <input type="time" value="${S.wakeGoal}" onchange="setWakeGoal(this.value)"></span></div>
+      ${wakeBody}${statLine('wake')}${msgLine('wake')}</div>`
+    +kindCard('walk')+kindCard('ex');
+  tick();
+}
+function tick(){
+  checkGoal('walk');checkGoal('ex');
+  if(tab!=='main')return;
+  const k=keyOf(new Date());
+  ['walk','ex'].forEach(kind=>{
+    const t=document.getElementById('t-'+kind);if(!t)return;
+    let sec=(S[kind][k]?S[kind][k].sec:0);
+    const r=S.run[kind];if(r&&r.day===k)sec+=(Date.now()-r.start)/1000;
+    t.textContent=Math.floor(sec/60)+'분 '+pad(Math.floor(sec%60))+'초';
+    const g=S.goal[kind]*60,ok=g>0&&sec>=g;
+    t.className='big '+(ok?'okc':'badc');
+    const b=document.getElementById('b-'+kind);
+    b.style.width=(g>0?Math.min(100,sec/g*100):0)+'%';
+    b.className=ok?'ok':'';
+  });
+}
+setInterval(tick,1000);
+
+/* ================= 그래프 ================= */
+function mv(d){cur.setMonth(cur.getMonth()+d);render()}
+function renderGraph(kind){
+  const y=cur.getFullYear(),mo=cur.getMonth(),n=new Date(y,mo+1,0).getDate();
+  const todayK=keyOf(new Date());
+  const days=[];
+  for(let d=1;d<=n;d++){
+    const k=y+'-'+pad(mo+1)+'-'+pad(d),r=S[kind][k];
+    if(!r){days.push({d,k,none:true});continue}
+    if(kind==='wake')days.push({d,k,v:r.t,g:r.goal,ok:r.t<=r.goal});
+    else days.push({d,k,v:r.sec/60,g:r.goal,ok:r.goal>0?r.sec>=r.goal*60:null});
+  }
+  const rec=days.filter(x=>!x.none);
+  let stat;
+  if(kind==='wake'){
+    stat=rec.length?`평균 ${fmt(Math.round(rec.reduce((a,x)=>a+x.v,0)/rec.length))} · 목표 달성 ${rec.filter(x=>x.ok).length}일`:'기록 없음';
+  }else{
+    const sum=Math.floor(rec.reduce((a,x)=>a+x.v,0));
+    stat=`합계 ${sum.toLocaleString()}분 · 목표 달성 ${rec.filter(x=>x.ok).length}일`;
+  }
+  let ymin=0,ymax,ticks;
+  if(kind==='wake'){ymin=300;ymax=840;ticks=[300,420,540,660,780,840]}
+  else{
+    const mx=Math.max(30,...rec.map(x=>Math.max(x.v,x.g||0)));
+    const step=Math.max(10,Math.ceil(mx/4/10)*10);
+    ymax=step*4;ticks=[0,step,step*2,step*3,step*4];
+  }
+  const W=360,H=330,L=38,R=6,T=40,B=26,pw=W-L-R,ph=H-T-B;
+  const yy=v=>T+ph*(1-(Math.min(Math.max(v,ymin),ymax)-ymin)/(ymax-ymin));
+  let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+  ticks.forEach(t=>{
+    s+=`<line x1="${L}" x2="${W-R}" y1="${yy(t)}" y2="${yy(t)}" stroke="#e9e2f5"/>`;
+    s+=`<text x="${L-6}" y="${yy(t)+4}" font-size="11" fill="#777" text-anchor="end">${kind==='wake'?(t/60)+'시':t}</text>`;
+  });
+  const slot=pw/n,bw=slot*0.68;
+  days.forEach((x,i)=>{
+    const bx=L+slot*i+(slot-bw)/2;
+    if(!x.none){
+      const top=yy(x.v),base=T+ph;
+      const col=x.ok===null?'#7c4dff':(x.ok?'#3b82f6':'#ef4444');
+      s+=`<rect x="${bx}" y="${top}" width="${bw}" height="${Math.max(1,base-top)}" rx="2" fill="${col}"/>`;
+      if(x.g>0)s+=`<line x1="${bx-1}" x2="${bx+bw+1}" y1="${yy(x.g)}" y2="${yy(x.g)}" stroke="#222" stroke-width="1.6" opacity=".55"/>`;
+      const lab=kind==='wake'?Math.floor(x.v/60)+':'+pad(x.v%60):String(Math.floor(x.v));
+      s+=`<text transform="translate(${bx+bw/2+3},${top-4}) rotate(-90)" font-size="8" fill="#555">${lab}</text>`;
+    }
+    const isT=x.k===todayK;
+    s+=`<text x="${bx+bw/2}" y="${H-9}" font-size="8" text-anchor="middle" fill="${isT?'#7c4dff':'#777'}" font-weight="${isT?800:400}">${x.d}</text>`;
+    s+=`<rect x="${L+slot*i}" y="${T}" width="${slot}" height="${ph+B}" fill="transparent" onclick="detail('${kind}',${i})"/>`;
+  });
+  s+='</svg>';
+  window._days=days;
+  document.getElementById('view').innerHTML=
+    `<div class="card nav"><button onclick="mv(-1)">&lt;</button>
+      <div class="c"><div class="mo">${y}년 ${mo+1}월</div><div class="sub">${LABEL[kind]} · ${stat}</div></div>
+      <button onclick="mv(1)">&gt;</button></div>
+     <div class="card">${s}
+       <div class="detail" id="detail">막대를 누르면 자세히 보입니다</div>
+       <div class="legend"><span style="--c:#3b82f6">목표 달성</span><span style="--c:#ef4444">목표 미달</span><span style="--c:#222">목표선</span></div></div>`;
+}
+function detail(kind,i){
+  const x=window._days[i],el=document.getElementById('detail');
+  const m=cur.getMonth()+1;
+  if(x.none){el.textContent=`${m}월 ${x.d}일 · 기록 없음`;return}
+  const badge=x.ok===null?'':`<span class="badge ${x.ok?'ok':'bad'}">${x.ok?'달성':'미달'}</span>`;
+  if(kind==='wake')el.innerHTML=`${m}월 ${x.d}일 · 기상 <b>${fmt(x.v)}</b> (목표 ${fmt(x.g)}) ${badge}`;
+  else el.innerHTML=`${m}월 ${x.d}일 · <b>${Math.floor(x.v)}분</b> (목표 ${x.g}분) ${badge}`;
+}
+
+/* ================= 달력 ================= */
+const HEART='<svg class="ht" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.7 4.5 6.4 4.5c2.1 0 3.8 1.2 5.6 3.3 1.8-2.1 3.5-3.3 5.6-3.3 3.7 0 5.5 3.9 4 7.3C19.5 16.4 12 21 12 21z" fill="#ffc9dc"/></svg>';
+function renderCal(){
+  const y=cur.getFullYear(),mo=cur.getMonth(),n=new Date(y,mo+1,0).getDate(),first=new Date(y,mo,1).getDay();
+  const todayK=keyOf(new Date());
+  const cnt={all:0,wake:0,walk:0,ex:0};
+  let cells='';
+  for(let i=0;i<first;i++)cells+='<div></div>';
+  for(let d=1;d<=n;d++){
+    const k=y+'-'+pad(mo+1)+'-'+pad(d);
+    const a=okOn('wake',k),b=okOn('walk',k),c=okOn('ex',k);
+    if(a)cnt.wake++;if(b)cnt.walk++;if(c)cnt.ex++;
+    const all=a&&b&&c;if(all)cnt.all++;
+    cells+=`<div class="cell ${k===todayK?'today':''}" onclick="calDetail('${k}')">${all?HEART:''}<span class="dn">${d}</span></div>`;
+  }
+  const dows=['일','월','화','수','목','금','토'].map(x=>`<div class="dow">${x}</div>`).join('');
+  document.getElementById('view').innerHTML=
+    `<div class="card nav"><button onclick="mv(-1)">&lt;</button>
+      <div class="c"><div class="mo">${y}년 ${mo+1}월</div><div class="sub">💗 <b style="color:#e8709a">${cnt.all}</b>일 · 기상 ${cnt.wake} · 산책 ${cnt.walk} · 운동 ${cnt.ex}</div></div>
+      <button onclick="mv(1)">&gt;</button></div>
+     <div class="card"><div class="grid">${dows}${cells}</div>
+      <div class="detail" id="detail">날짜를 누르면 자세히 보입니다<br><span class="m">💗 기상·산책·운동 3개 모두 성공한 날</span></div></div>`;
+}
+function calDetail(k){
+  const a=k.split('-').map(Number),el=document.getElementById('detail');
+  const w=S.wake[k],wk=S.walk[k],ex=S.ex[k];
+  const mark=o=>o?'✅':'❌';
+  const wt=w?fmt(w.t):'기록 없음';
+  const wm=wk?Math.floor(wk.sec/60)+'분':'0분',em=ex?Math.floor(ex.sec/60)+'분':'0분';
+  el.innerHTML=`${a[1]}월 ${a[2]}일<br>기상 ${wt} ${mark(okOn('wake',k))} · 산책 ${wm} ${mark(okOn('walk',k))} · 운동 ${em} ${mark(okOn('ex',k))}`;
+}
+
+
+/* ================= 설정 / 백업 ================= */
+function renderSet(){
+  document.getElementById('view').innerHTML=
+   `<div class="card"><div class="ttl" style="font-size:20px">⚙️ 기록 보관</div>
+    <div class="m" style="margin:10px 0 14px;line-height:1.6">휴대폰 브라우저의 사이트 데이터를 지우면 기록도 사라집니다. 가끔 백업 파일을 저장해 두세요.</div>
+    <div class="row" style="justify-content:center;gap:12px">
+      <button class="chipb" onclick="backupData()">기록 백업</button>
+      <button class="chipb" onclick="restoreData()">기록 복구</button>
+    </div></div>`;
+}
+function backupData(){
+  const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='busy_sunny_backup_'+keyOf(new Date())+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+}
+function restoreData(){document.getElementById('restoreFile').click()}
+document.getElementById('restoreFile').addEventListener('change',e=>{
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=ev=>{
+    try{
+      const p=JSON.parse(ev.target.result);
+      if(!p||typeof p!=='object'||!p.wake||!p.walk||!p.ex)throw 0;
+      if(!confirm('현재 기록을 백업 파일의 기록으로 바꿉니다. 계속할까요?'))return;
+      Object.assign(S,p);
+      S.msg=S.msg||{wake:{},walk:{},ex:{}};S.cel=S.cel||{walk:{},ex:{}};S.bag=S.bag||{};S.cyc=S.cyc||{};
+      S.run=S.run||{walk:null,ex:null};S.pending=S.pending||{walk:null,ex:null};
+      save();render();alert('복구 완료!');
+    }catch(err){alert('복구 실패: 파일 오류')}
+    e.target.value='';
+  };
+  rd.readAsText(f);
+});
+
+drawTabs();render();
+if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
+</script>
+</body>
+</html>
